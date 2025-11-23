@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Stack.h"
+#include "tda_maze2/Stack.h"
 
 typedef struct node{
     char value; // Camino = '0' y Pared = '1'.
@@ -132,7 +132,7 @@ void free_maze(node * top_left){
 
 
 int main(){
-    node * maze = build_maze("prueba.txt");
+    node * maze = build_maze("prueba2.txt");
 
     printf("Laberinto: \n");
     print_maze(maze);
