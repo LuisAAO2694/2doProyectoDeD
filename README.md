@@ -8,3 +8,5 @@
 - git add . o el nombre del archivo 
 - git commit -m "Comentario"
 - git push
+- git branch NombredeRama
+- git merge ramaOrigen ramaDestino
