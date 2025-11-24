@@ -2,72 +2,119 @@
 #include <stdlib.h>
 #include "Stack.h"
 
-struct stack_node {
-int info;
-struct stack_node *prev;
+typedef struct stack_node 
+{
+    void* data;
+    struct stack_node* prev;
+}stack_node;
+
+struct stack
+{
+    stack_node* top;
+    int count;
 };
 
-/* STACK GLOBAL */
-stack_node *stack_top = NULL;
-int count = 0;
-
-
-void push(int data)
+stack* stack_create() 
 {
-    stack_node *temp = NULL;
+    stack* s = malloc(sizeof(stack));
 
-    if (stack_top == NULL)
+    if (s == NULL) 
     {
-        stack_top = (stack_node *)malloc(sizeof(struct stack_node));
-        stack_top->prev = NULL;
-        stack_top->info = data;
+        return NULL;
     }
-    else
-    {
-        temp = (stack_node *)malloc(sizeof(struct stack_node));
-        temp->prev = stack_top;
-        temp->info = data;
-        stack_top = temp;
-    }
-    count++;
-    printf("\tNode is Inserted\n");
+    
+    s->top = NULL;
+    s->count = 0;
+    return s;
 }
 
-
-int pop()
+void stack_destroy(stack* s) 
 {
-    stack_node *nptr = stack_top;
-    if (nptr == NULL)
+    if (s == NULL) 
     {
-        printf("\nStack Underflow\n");
-        return -1;
+        return;
     }
-    else
+    
+    while (!stack_is_empty(s)) 
     {
-        nptr = nptr->prev;
+        stack_pop(s);
     }
-    int popped = stack_top->info;
-    free(stack_top);
-    stack_top = nptr;
-    count--;
-    return popped;
+    free(s);
 }
 
-void display()
+void stack_push(stack* s, void* data) 
 {
-// Display the elements of the stack
-stack_node * nptr = stack_top;
-if (nptr == NULL)
-{
-    printf("\nStack Underflow\n");
-    return;
+    if (s == NULL) 
+    {
+        return;
+    }
+    
+    stack_node* new_node = malloc(sizeof(stack_node));
+    if (new_node == NULL) 
+    {
+        return;
+    } 
+    
+    new_node->data = data;
+    new_node->prev = s->top;
+    s->top = new_node;
+    s->count++;
 }
-printf("The stack is \n");
-while (nptr != NULL)
+
+void* stack_pop(stack* s) 
 {
-    printf("%d--->", nptr->info);
-    nptr = nptr->prev;
+    if (s == NULL || s->top == NULL) 
+    {
+        return NULL;
+    }
+    
+    stack_node* temp = s->top;
+    void* data = temp->data;
+    s->top = temp->prev;
+
+    free(temp);
+    s->count--;
+    return data;
 }
-printf("NULL\n\n");
+
+int stack_is_empty(stack* s) 
+{
+    return (s == NULL || s->top == NULL);
+}
+
+int stack_size(stack* s) 
+{
+    if (s == NULL) 
+    {
+        return 0;
+    }
+    
+    return s->count;
+}
+
+void display(stack* s)
+{
+    if(s == NULL)
+    {
+        printf("El stack es null\n");
+        return;
+    }
+
+    stack_node* current = s->top;
+    if (current == NULL)
+    {
+        printf("El stack esta vacio\n");
+        return;
+    }
+
+    printf("Stack contents (%d elements): ", s->count);
+    while (current != NULL) 
+    {
+        //Como guardamos void*, necesitamos saber qué tipo de dato imprimir
+        //Para nodos del laberinto, podemos imprimir coordenadas
+        printf("[%p] --> ", current->data); // Dirección de memoria del nodo
+        current = current->prev;
+    }
+    printf("NULL\n");
 }
 
