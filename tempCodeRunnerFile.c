@@ -1,31 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "tda_maze2/Stack.h"
-
-typedef struct node
-{
-    char value; // Camino = '0' y Pared = '1'.
-    struct node * up; // apunta al nodo de arriba.
-    struct node * down; // apunta al nodo de abajo.
-    struct node * left; // apunta al nodo de la izquierda.
-    struct node * right; // apunta al nodo de la derecha.
-
-    int visited;
-}node;
-
-// Funcion para crear los nodos e inicializando los valores de cada nuevo nodo.
-node * create_node(char value)
-{
-    node * new = malloc(sizeof(node));
-    if(new == NULL) return NULL; // Hacemos un catcher del error, por si malloc no funciono correctamente.
-
-    new->value = value;
-    new->up = new->down = new->right = new->left = NULL;
-    new->visited = 0;
-    return new;
-}
-
-// Funcion que recibe el nombre del archivo como parametro para poder armar el laberinto, retorna el apuntador a la esquina superior izquierda.
 node * build_maze(char * filename)
 {
     FILE * fptr = fopen(filename, "r");
@@ -125,63 +97,8 @@ node * build_maze(char * filename)
         }
     }
 
-    if(fscanf(fptr, "%s", buffer) == 1){
-        printf("Error, el archivo tiene mas filas de las mencionadas.\n");
-        free(prev_row);
-        fclose(fptr);
-        return NULL;
-    }
-
     free(prev_row);
     fclose(fptr);
 
     return top_left;
-}
-
-// Funcion para imprimir el laberinto, recibe como parametro el apuntador a la esquina superior izquierda.
-void print_maze(node * top_left){
-    node * inicio = top_left;
-
-    while(inicio != NULL)
-    {
-        node * n = inicio;
-        while(n)
-        {
-            printf("%c", n->value);
-            n = n->right;
-        }
-        printf("\n");
-        inicio = inicio->down;
-    }
-
-}
-
-// Funcion para liberar todo el laberinto.
-void destroy_maze(node * top_left)
-{
-    node * inicio = top_left;
-    
-    while(inicio != NULL)
-    {
-        node * n = inicio->down;
-        node * m = inicio;
-        
-        while(m)
-        {
-            node * next = m->right;
-            free(m);
-            m = next;
-        }
-        inicio = n;
-    }
-}
-
-
-int main(){
-    node * maze = build_maze("prueba.txt");
-
-    printf("Laberinto: \n");
-    print_maze(maze);
-    
-    destroy_maze(maze);
 }
