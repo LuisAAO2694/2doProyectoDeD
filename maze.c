@@ -176,12 +176,136 @@ void destroy_maze(node * top_left)
     }
 }
 
+//Funcion para encontrar la entrada (ultima fila *desde abajo xd)
+node *encontrarEntrada(node* top_left)
+{
+    //Aqui primeramente checamos si el laberinto existe
+    if(top_left == NULL)
+    {
+        return NULL;
+    }
 
-int main(){
-    node * maze = build_maze("prueba.txt");
+    //Ahora bien, navegamos hastta la ultima fila del laberinto
+    //Este es nuestro apuntador auxiliar que apuenta a la esquina superior izquierda
+    node* ultima_fila = top_left;
+    //En este while empezamos desde la esquina superior izquierda y bajamos hasta el final
+    //Recorremos, ya que la entrada siempre esta hasta el fondo
+    while(ultima_fila->down != NULL)
+    {
+        //Avanzamos un nivel hahcia abajo
+        ultima_fila = ultima_fila->down;
+    }
+
+    //Creamos otro nodo temp para recorrernos horizontalemnte
+    node* current = ultima_fila;
+
+    //En este bucle recorre horizontalmente la ultima fila
+    //Mientras current no sea NULL 
+    while(current != NULL)
+    {
+        //Checamos si el nodo es un camino o una pared
+        //caminos "0" y paredes "1"
+        if(current->value == '0')
+        {
+            //Si encontramos el camino, retornamos el puntero a ese nodo que sera nuestra inicio
+            //Espero haberme dado a entender
+            return current;
+        }
+        //Si no es el camino le sigo a la derecha xd
+        current = current->right;
+    }
+    return NULL;
+}
+
+//Funcion para checar si un nodo es la salida (la primera fila de arriba)
+int isExit(node* n)
+{
+    //Checamos que el puntero al nodo no sea NULL
+    if(n == NULL)
+    {
+        return 0;
+    }
+
+    //Un nodo es considerado salida si se cumple:
+    //1. n->up == NULL: No tiene nodo arriba, lo que significa que está en la primera fila
+    //2. n->value == '0'
+    return (n->up == NULL && n->value == '0');
+}
+
+//Version beta del algoritmo para resolver el algoritmo (usando el stack)
+int solve_maze(node* entrada)
+{
+    //Checo si la entrada es valida,
+    //Si es null no se puede resolver
+    if(entrada == NULL)
+    {
+        return 0;
+    }
+
+    stack* rutaDeLaPila = stack_create();
+    
+    //Insertamos el nodo en la pila 
+    //Aqui empieza todo
+    stack_push(rutaDeLaPila, entrada);
+    //Marcamos el nodo de entrada como visitado
+    //Esto previene que volvamos a. visitar el mismo nodo ;)
+    entrada->visited = 1;
+
+    //Mientrtas haya nodos que explorar seguimos buscando la salida
+    while(!stack_is_empty(rutaDeLaPila))
+    {
+        //Convierto el void* a node* ya que stack_pop retorna void*
+        node* current = (node*)stack_pop(rutaDeLaPila);
+
+        //Checamos si el nodo actual es la salida del laberinto
+        if(isExit(current))
+        {
+            printf("Se encontro la salida!!!");
+            stack_destroy(rutaDeLaPila);
+            return 1;
+        }
+
+        //Aqui checamos los "vecinos xd" (osea sus alrededores)
+        //Arriba, Derecha, Abajo, Izquierda
+        node* vecinos[] = {current->up, current->right, current->down, current->left};
+
+        //Aqui checamos cada uno de los posibles vecinos 
+        for(int ay = 0; ay < 4; ay++)
+        {
+            node* vecino = vecinos[ay];
+            if(vecino != NULL && vecino->value == '0' && !vecino->visited)
+            {
+                vecino->visited = 1;
+                stack_push(rutaDeLaPila, vecino);
+            }
+        }
+    }
+
+    printf("El laberinto no tiene solucion :/");
+    stack_destroy(rutaDeLaPila);
+    return 0;
+}
+
+int main()
+{
+    node * maze = build_maze("prueba4.txt");
 
     printf("Laberinto: \n");
     print_maze(maze);
+
+    //Lo de resolver el laberinto
+    node* entrance = encontrarEntrada(maze);
+    if(entrance != NULL)
+    {
+        printf("\n");
+        printf("Entrada encontrada\n");
+        int tendraSolucion = solve_maze(entrance);
+        printf("\nEl laberinto %s solucion\n", tendraSolucion ? "Tiene" : "No tiene");
+    }
+    else
+    {
+        printf("No se encontro una entrada\n");
+    }
     
     destroy_maze(maze);
 }
